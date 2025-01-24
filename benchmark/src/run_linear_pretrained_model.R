@@ -174,14 +174,10 @@ bind_cols(tibble(cond = psce$clean_condition, training = psce$training),
 
 # Store output
 tmp <- as.list(as.data.frame(pred))
-tmp_out_dir <- file.path(tempdir(), "prediction_storage")
 dir.create(tmp_out_dir)
-write_lines(rjson::toJSON(tmp), file.path(tmp_out_dir, "all_predictions.json"))
-write_lines(rjson::toJSON(rownames(pred)), file.path(tmp_out_dir, "gene_names.json"))
-file.rename(tmp_out_dir,out_dir)
-
+write_lines(rjson::toJSON(tmp), file.path(out_dir, "all_predictions.json"))
+write_lines(rjson::toJSON(rownames(pred)), file.path(out_dir, "gene_names.json"))
 
 #### Session Info
 sessionInfo()
-
 
