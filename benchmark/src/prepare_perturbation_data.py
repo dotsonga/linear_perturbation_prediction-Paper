@@ -115,9 +115,29 @@ elif args.dataset_name == "norman_from_scfoundation":
   }
 else:
   pert_data = PertData(pert_data_folder)
-  pert_data.load(args.dataset_name)
-  pert_data.prepare_split(split = 'simulation', seed = args.seed)
-  set2conditions = pert_data.set2conditions
+  pert_data.load(data_path = args.dataset_name)
+  custom_adata = pert_data.adata
+
+  non_ctrl_entries = custom_adata.obs[~custom_adata.obs['condition'].str.contains('ctr>
+
+  if not non_ctrl_entries.empty:
+    conds = custom_adata.obs['condition'].cat.remove_unused_categories().cat.categorie>
+    single_pert = [x for x in conds if 'ctrl' in x]
+    double_pert = np.setdiff1d(conds, single_pert).tolist()
+    double_training = np.random.choice(double_pert, size=len(double_pert) // 2, replac>
+    double_test = np.setdiff1d(double_pert, double_training).tolist()
+    double_test =  np.random.choice(double_test, size = len(double_test)//2, replace =>
+    double_holdout = np.setdiff1d(double_pert, double_training + double_test).tolist()
+    set2conditions = {
+      "train": single_pert + double_training,
+      "test": double_test,
+      "val": double_holdout
+    }
+  else:
+    pert_data.prepare_split(split = 'simulation', seed = args.seed)
+    set2conditions = pert_data.set2conditions
+#  pert_data.prepare_split(split = 'simulation', seed = args.seed)
+#  set2conditions = pert_data.set2conditions
 
 
 with open(outfile, "w") as outfile: 
